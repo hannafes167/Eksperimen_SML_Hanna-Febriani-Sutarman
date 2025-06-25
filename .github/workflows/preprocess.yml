@@ -3,7 +3,6 @@ name: Preprocess Dataset Automatically
 on:
   push:
     paths:
-      - '**.py'
       - 'heart.csv'
       - 'requirements.txt'
   workflow_dispatch:
