@@ -7,7 +7,7 @@ import joblib
 import os
 
 # Load dataset
-def preprocess_data(input_path='heart.csv', output_path='output/processed.csv'):
+def preprocess_data(input_path='heart.csv'):
     df = pd.read_csv(input_path)
 
 # Tentukan kolom
@@ -51,10 +51,10 @@ X_train_scaled = X_train_scaled[num_cols + cat_cols]
 X_test_scaled = X_test_scaled[num_cols + cat_cols]
 
 # Simpan ke file
-X_train_scaled.to_csv('X_train.csv', index=False)
-X_test_scaled.to_csv('X_test.csv', index=False)
-y_train.to_csv('y_train.csv', index=False)
-y_test.to_csv('y_test.csv', index=False)
-joblib.dump(scaler, 'scaler.pkl')
+X_train_scaled.to_csv('output/X_train.csv', index=False)
+X_test_scaled.to_csv('output/X_test.csv', index=False)
+y_train.to_csv('output/y_train.csv', index=False)
+y_test.to_csv('output/y_test.csv', index=False)
+joblib.dump(scaler, 'output/scaler.pkl')
 
 print("✅ Dataset selesai diproses dan disimpan.")
