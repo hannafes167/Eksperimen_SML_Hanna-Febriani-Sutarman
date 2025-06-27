@@ -3,8 +3,10 @@ name: Preprocess Dataset Automatically
 on:
   push:
     paths:
+      - 'preprocessing/automate_Hanna.py'
       - 'heart.csv'
       - 'requirements.txt'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
