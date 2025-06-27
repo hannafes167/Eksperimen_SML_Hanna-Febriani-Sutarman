@@ -1,48 +1,59 @@
-# scripts/preprocessing.py
+# preprocessing/automate_Hanna.py
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import joblib
 import os
 
-def preprocess_data(input_path='heart.csv', output_path='output/processed.csv'):
-    data = pd.read_csv(input_path)
+# Load dataset
+df = pd.read_csv('heart.csv')
 
-    target_column = 'target'
-    numeric_features = data.select_dtypes(include=['float64', 'int64']).columns.tolist()
-    categorical_features = data.select_dtypes(include=['object']).columns.tolist()
+# Tentukan kolom
+cat_cols = ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
+num_cols = ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
 
-    if target_column in numeric_features:
-        numeric_features.remove(target_column)
-    if target_column in categorical_features:
-        categorical_features.remove(target_column)
+# Cek dan tangani outlier (optional, hanya cetak info)
+Q1 = df[num_cols].quantile(0.25)
+Q3 = df[num_cols].quantile(0.75)
+IQR = Q3 - Q1
+outliers_iqr = ((df[num_cols] < (Q1 - 1.5 * IQR)) | (df[num_cols] > (Q3 + 1.5 * IQR)))
+print("Outliers per kolom:\n", outliers_iqr.sum())
 
-    numeric_transformer = Pipeline([
-        ('imputer', SimpleImputer(strategy='mean')),
-        ('scaler', StandardScaler())
-    ])
+# Split X dan y
+X = df.drop('target', axis=1)
+y = df['target']
 
-    categorical_transformer = Pipeline([
-        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    ])
+# Split train-test
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 
-    preprocessor = ColumnTransformer([
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)
-    ])
+# Scale numerik saja
+X_train_to_scale = X_train[num_cols]
+X_test_to_scale = X_test[num_cols]
+X_train_not_scaled = X_train[cat_cols]
+X_test_not_scaled = X_test[cat_cols]
 
-    X = data.drop(columns=[target_column])
-    y = data[target_column]
+scaler = StandardScaler()
+X_train_scaled_part = scaler.fit_transform(X_train_to_scale)
+X_test_scaled_part = scaler.transform(X_test_to_scale)
 
-    X_processed = preprocessor.fit_transform(X)
-    df_processed = pd.DataFrame(X_processed)
-    df_processed['target'] = y.values
+X_train_scaled_df = pd.DataFrame(X_train_scaled_part, columns=num_cols)
+X_test_scaled_df = pd.DataFrame(X_test_scaled_part, columns=num_cols)
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    df_processed.to_csv(output_path, index=False)
-    print(f'✅ Preprocessing complete. File saved to: {output_path}')
+X_train_scaled = pd.concat([X_train_scaled_df, X_train_not_scaled], axis=1)
+X_test_scaled = pd.concat([X_test_scaled_df, X_test_not_scaled], axis=1)
 
-if __name__ == "__main__":
-    preprocess_data()
+# Urutkan kolom
+X_train_scaled = X_train_scaled[num_cols + cat_cols]
+X_test_scaled = X_test_scaled[num_cols + cat_cols]
+
+# Simpan ke file
+X_train_scaled.to_csv('X_train.csv', index=False)
+X_test_scaled.to_csv('X_test.csv', index=False)
+y_train.to_csv('y_train.csv', index=False)
+y_test.to_csv('y_test.csv', index=False)
+joblib.dump(scaler, 'scaler.pkl')
+
+print("✅ Dataset selesai diproses dan disimpan.")
