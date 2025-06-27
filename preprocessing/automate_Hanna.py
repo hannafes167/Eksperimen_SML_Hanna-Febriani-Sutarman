@@ -6,7 +6,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 import os
 
-def preprocess_data(input_path='data/heart.csv', output_path='output/processed.csv'):
+def preprocess_data(input_path='heart.csv', output_path='output/processed.csv'):
     data = pd.read_csv(input_path)
 
     target_column = 'target'
