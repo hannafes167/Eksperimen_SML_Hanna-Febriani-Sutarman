@@ -7,7 +7,8 @@ import joblib
 import os
 
 # Load dataset
-df = pd.read_csv('heart.csv')
+def preprocess_data(input_path='heart.csv', output_path='output/processed.csv'):
+    df = pd.read_csv(input_path)
 
 # Tentukan kolom
 cat_cols = ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
